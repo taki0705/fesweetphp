@@ -289,9 +289,29 @@
 
         </div>
         <div class="content hidden" id="accountContent">
-            <h1 class="tkdoanhthu">Thống kê Doanh Thu</h1>
-                    <div id="chart-container">
+            <h1 class="tkdoanhthu">Thống kê Doanh Thu Tháng</h1>
+                    <div class="chart-container">
                 <canvas id="graphCanvas"></canvas>
+            </div>
+            <h1 class="tkdoanhthu">Thống kê Doanh Thu Ngày</h1>
+            <form id="monthForm">
+                        <select id="monthSelector" onchange="showGraph2()">
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+            </select>
+            </form>
+            <div class="chart-container">
+                <canvas id="graphCanvasDaily"></canvas>
             </div>
 
         </div>
@@ -324,6 +344,8 @@
    
     </body>
 </html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -351,6 +373,7 @@
 
         $(document).ready(function () {
             showGraph();
+            showGraph2()
         });
 
         function showGraph() {
@@ -366,7 +389,7 @@
                 var chartdata = {
                     labels: months,
                     datasets: [{
-                        label: 'Tổng số tiền của hóa đơn',
+                        label: 'Tổng số tiền của hóa đơn các tháng',
                         backgroundColor: '#49e2ff',
                         borderColor: '#46d5f1',
                         hoverBackgroundColor: '#CCCCCC',
@@ -383,6 +406,49 @@
                 });
             });
         }
+
+  
+
+        var barGraphDaily; // Define a variable to store the chart instance
+
+function showGraph2() {
+    var selectedMonth = $('#monthSelector').val(); // Get the selected month value
+    $.post("model/datadaily.php", { month: selectedMonth }, function(data) {
+        var daysInMonth = [];
+        var totalBillsPerDay = [];
+
+        for (var i in data) {
+            daysInMonth.push(data[i].day);
+            totalBillsPerDay.push(data[i].totalbill2);
+        }
+
+        var chartDataDaily = {
+            labels: daysInMonth,
+            datasets: [{
+                label: 'Tổng tiền các ngày',
+                backgroundColor: '#49e2ff',
+                borderColor: '#46d5f1',
+                hoverBackgroundColor: '#CCCCCC',
+                hoverBorderColor: '#666666',
+                data: totalBillsPerDay
+            }]
+        };
+
+        var graphTargetDaily = $("#graphCanvasDaily");
+        // Destroy the existing chart if it exists
+        if (barGraphDaily) {
+            barGraphDaily.destroy();
+        }
+        // Create a new chart
+        barGraphDaily = new Chart(graphTargetDaily, {
+            type: 'bar',
+            data: chartDataDaily
+        });
+    });
+}
+
+
+
         $(document).ready(function(){
     $('#searchbill').submit(function(e){
         e.preventDefault(); // Ngăn form được gửi đi một cách thông thường
@@ -536,9 +602,9 @@ function changeStatus(orderId) {
             max-width: 100%;
             height: auto;
         }
-        #chart-container {
+        .chart-container {
             width: 100%;
-            height: auto;
+            height: 600px;
         }
         .tkdoanhthu{
             width:1000px;
@@ -551,3 +617,4 @@ function changeStatus(orderId) {
     <link rel="stylesheet" href="./view/libs/slick/slick-theme.css">
     <!-- My Css -->
     <link rel="stylesheet" href="./view/dist/css/style.css" >
+    
